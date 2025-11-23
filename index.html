@@ -36,53 +36,68 @@
 
   <h3 id="result"></h3><button id="exportCSVBtn" class="export" onclick="downloadCSV()">تصدير CSV</button> <button id="exportExcelBtn" class="export" onclick="downloadExcel()">تصدير Excel</button> <button id="printBtn" class="print" onclick="window.print()">طباعة</button>
 
-</div><footer>⚡ Created by <span class="glowing-name">ENG. Mohamed Sobhy</span> ⚡</footer><script>
-const fertilizers = {
-  "Urea 46% N": { N: 46 },
-  "Ammonium Nitrate 33.5%": { N: 33.5 },
-  "MAP 12-61-0": { N: 12, P: 61 },
-  "DAP 18-46-0": { N: 18, P: 46 },
-  "MKP 0-52-34": { P: 52, K: 34 },
-  "NPK 20-20-20": { N: 20, P: 20, K: 20 },
-  "كبريتات الأمونيوم 20.5%": { N: 20.5 },
-  "نترات الأمونيوم 33.5%": { N: 33.5 },
-  "اليوريا 46.5%": { N: 46.5 },
-  "نترات الكالسيوم 15.5%": { N: 15.5 },
-  "حمض النيتريك 60%": { N: 60 },
-  "فوسفات اليوريا 17-19": { N: 17, P: 19 },
-  "فوسفات أحادي الأمونيوم 12-51.5": { N: 12, P: 51.5 },
-  "فوسفات ثنائي الأمونيوم 19.5-55": { N: 19.5, P: 55 },
-  "سوبر فوسفات أحادي 15.5%": { P: 15.5 },
-  "سوبر فوسفات ثلاثي 46%": { P: 46 },
-  "حمض الفوسفوريك 85%": { P: 85 },
-  "كبريتات البوتاسيوم 48%": { K: 48 },
-  "كلوريد البوتاسيوم 61%": { K: 61 },
-  "نترات البوتاسيوم 13-44": { N: 13, K: 44 }
-};
+</div><footer>⚡ تصميم <span class="glowing-name">م. محمد صبحي</span> ⚡</footer><script>
+const FERTILIZERS_DATA = [
+  { en: "Urea 46% N", ar: "يوريا 46% ن", ratios: { N: 46 } },
+  { en: "Ammonium Nitrate 33.5% N", ar: "نترات الأمونيوم 33.5% ن", ratios: { N: 33.5 } },
+  { en: "Ammonium Sulfate 20.5% N", ar: "كبريتات الأمونيوم 20.5% ن", ratios: { N: 20.5 } },
+  { en: "Calcium Nitrate 15.5% N", ar: "نترات الكالسيوم 15.5% ن", ratios: { N: 15.5 } },
+  { en: "Nitric Acid 60% N", ar: "حمض النيتريك 60% ن", ratios: { N: 60 } },
+  { en: "MAP 12-61-0", ar: "فوسفات أحادي الأمونيوم 12-61-0", ratios: { N: 12, P: 61 } },
+  { en: "DAP 18-46-0", ar: "فوسفات ثنائي الأمونيوم 18-46-0", ratios: { N: 18, P: 46 } },
+  { en: "MKP 0-52-34", ar: "فوسفات أحادي البوتاسيوم 0-52-34", ratios: { P: 52, K: 34 } },
+  { en: "NPK 20-20-20", ar: "مركب 20-20-20", ratios: { N: 20, P: 20, K: 20 } },
+  { en: "Urea Phosphate 17-44-0", ar: "فوسفات اليوريا 17-44-0", ratios: { N: 17, P: 44 } },
+  { en: "Mono-Ammonium Phosphate 12-51.5-0", ar: "فوسفات أحادي الأمونيوم 12-51.5-0", ratios: { N: 12, P: 51.5 } },
+  { en: "Di-Ammonium Phosphate 19.5-55-0", ar: "فوسفات ثنائي الأمونيوم 19.5-55-0", ratios: { N: 19.5, P: 55 } },
+  { en: "Single Super Phosphate 0-15.5-0", ar: "سوبر فوسفات أحادي 0-15.5-0", ratios: { P: 15.5 } },
+  { en: "Triple Super Phosphate 0-46-0", ar: "سوبر فوسفات ثلاثي 0-46-0", ratios: { P: 46 } },
+  { en: "Phosphoric Acid 85% P", ar: "حمض الفوسفوريك 85% ف", ratios: { P: 85 } },
+  { en: "Potassium Sulfate 0-0-48", ar: "كبريتات البوتاسيوم 0-0-48", ratios: { K: 48 } },
+  { en: "Potassium Chloride 0-0-61", ar: "كلوريد البوتاسيوم 0-0-61", ratios: { K: 61 } },
+  { en: "Potassium Nitrate 13-0-44", ar: "نترات البوتاسيوم 13-0-44", ratios: { N: 13, K: 44 } }
+];
 
 function loadFertilizers() {
   const select = document.getElementById("fertilizer");
-  for (let f in fertilizers) {
+  select.innerHTML = ''; // Clear existing options
+  const lang = document.getElementById("language").value;
+
+  FERTILIZERS_DATA.forEach((fert) => {
     const option = document.createElement("option");
-    option.value = f;
-    option.textContent = f;
+    option.value = fert.en; // Use English name as value for consistent lookup
+    option.textContent = lang === 'ar' ? fert.ar : fert.en;
     select.appendChild(option);
-  }
+  });
+}
+
+function getFertilizerRatios(name) {
+  const fert = FERTILIZERS_DATA.find(f => f.en === name);
+  return fert ? fert.ratios : null;
 }
 
 function calculate() {
-  const fert = document.getElementById("fertilizer").value;
+  const fertNameEn = document.getElementById("fertilizer").value;
   const units = document.getElementById("units").value;
+  const lang = document.getElementById("language").value;
 
-  const percent = Object.values(fertilizers[fert])[0];
+  const ratios = getFertilizerRatios(fertNameEn);
+  if (!ratios) {
+    document.getElementById("result").textContent = lang === 'ar' ? "خطأ: لم يتم العثور على بيانات السماد." : "Error: Fertilizer data not found.";
+    return;
+  }
+
+  // Use the first ratio found (N, P, or K) for calculation as per original logic
+  const percent = Object.values(ratios)[0];
   const kg = (units / (percent / 100)).toFixed(2);
 
-  const lang = document.getElementById("language").value;
+  const fertNameDisplay = FERTILIZERS_DATA.find(f => f.en === fertNameEn)[lang];
+
   let resultText;
   if (lang === "en") {
-    resultText = `You need ${kg} kg of ${fert} fertilizer`;
+    resultText = `You need ${kg} kg of ${fertNameDisplay} fertilizer`;
   } else {
-    resultText = `تحتاج إلى ${kg} كجم من سماد ${fert}`;
+    resultText = `تحتاج إلى ${kg} كجم من سماد ${fertNameDisplay}`;
   }
   document.getElementById("result").textContent = resultText;
 }
@@ -129,6 +144,7 @@ function switchLanguage() {
     document.getElementById("exportExcelBtn").textContent = "تصدير Excel";
     document.getElementById("printBtn").textContent = "طباعة";
   }
+  loadFertilizers(); // Reload fertilizer list with correct language
 }
 
 loadFertilizers();
